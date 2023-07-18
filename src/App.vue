@@ -1,47 +1,35 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { computed, ref, watch } from 'vue'
+import { useClipboard, useEyeDropper } from '@vueuse/core'
+
+const source = ref('')
+const { text, copy, copied, isSupported: isSupportedUseClipboard } = useClipboard({ source })
+const { isSupported: isSupportedUseEyeDropper, open, sRGBHex } = useEyeDropper()
+
+const canPlay = computed(() => isSupportedUseClipboard && isSupportedUseEyeDropper)
+
+watch(sRGBHex, () => copy(sRGBHex.value))
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <dialog class="border-2 border-black rounded-lg py-8 px-10 mt-6" :open="!canPlay.value">
+    お使いの環境ではこのカラーピッカーを使えません
+  </dialog>
+  <div class="p-8">
+    <img
+      class="w-full h-auto rounded-lg"
+      src="https://picsum.photos/1200/900"
+      alt="ランダムな画像"
+    />
+  </div>
+  <button class="fixed top-4 right-4 bg-lime-600 py-3 px-5 rounded text-white" @click="open()">
+    👉 EyeDropper Open
+  </button>
+  <div
+    v-if="copied && sRGBHex"
+    class="fixed text-center w-48 m-auto top-4 left-0 right-0 py-3 px-5 rounded text-white"
+    :style="{ backgroundColor: text }"
+  >
+    Copied {{ text }}
+  </div>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
